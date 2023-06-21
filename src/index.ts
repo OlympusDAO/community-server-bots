@@ -3,7 +3,7 @@ import { getMetricsLatestCompleteData, getTokensLatestCompleteData, getSuppliesL
 import { getLiquidBackingPerOhmBacked, getTreasuryAssetValue, getOhmCirculatingSupply } from "subgraph/helpers";
 
 const client = createClient({
-    baseURL: 'http://127.0.0.1:9991/',
+    //baseURL: 'http://127.0.0.1:9991/',
 });
 
 function getStartDate() {
@@ -29,3 +29,5 @@ async function getProtocolMetrics() {
         console.log(ohmMarketCap);
     }
 }
+
+getProtocolMetrics();

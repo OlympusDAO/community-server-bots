@@ -1,0 +1,23 @@
+{
+    "name": "community-server-bots",
+    "version": "1.0.0",
+    "description": "",
+    "main": "./prod/index.js",
+    "scripts": {
+      "build": "tsc",
+      "start:dev": "ts-node -r tsconfig-paths/register src/index.ts",
+      "start:prod": "node -r dotenv/config -r ts-node/register/transpile-only -r tsconfig-paths/register ./prod/index.js"
+    },
+    "author": "0xrusowsky",
+    "license": "MIT",
+    "dependencies": {
+      "@olympusdao/treasury-subgraph-client": "^1.2.0",
+      "dotenv": "^16.3.1"
+    },
+    "devDependencies": {
+      "@types/node": "^20.3.1",
+      "tsconfig-paths": "^4.2.0",
+      "typescript": "^5.1.3"
+    }
+  }
+  

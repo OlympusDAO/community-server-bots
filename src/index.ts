@@ -1,9 +1,5 @@
 import { Client, GatewayIntentBits, GuildMember } from "discord.js";
-import { createClient } from "@olympusdao/treasury-subgraph-client";
 import { ProtocolMetric, MetricData, updateProtocolMetrics } from "metrics";
-
-// Wundergraph API Client
-const client = createClient();
 
 // Initialize protocol metrics
 const metrics: Map<string, MetricData> = new Map<string, MetricData>();

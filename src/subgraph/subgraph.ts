@@ -1,9 +1,7 @@
-import { createClient, Operations, Queries } from "@olympusdao/treasury-subgraph-client";
+import { createClient, Queries } from "@olympusdao/treasury-subgraph-client";
 import { CHAIN_ETHEREUM } from "subgraph/constants";
 
-const client = createClient({
-    baseURL: 'http://127.0.0.1:9991/',
-});
+const client = createClient();
 
 type TokenRecordArray = Exclude<Queries["paginated/tokenRecords"]["response"]["data"], undefined>;
 export type TokenRecord = TokenRecordArray[0];

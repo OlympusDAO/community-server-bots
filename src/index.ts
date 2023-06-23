@@ -4,7 +4,7 @@ import { ProtocolMetric, MetricData, updateProtocolMetrics } from "metrics";
 
 // Wundergraph API Client
 const client = createClient({
-    baseURL: 'http://127.0.0.1:9991/',
+    //baseURL: 'http://127.0.0.1:9991/',
 });
 
 // Initialize protocol metrics
@@ -146,3 +146,5 @@ async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: Pr
             ));
     }
 }
+
+getProtocolMetrics();

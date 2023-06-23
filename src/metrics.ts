@@ -59,5 +59,7 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricData>)
             value: liquidBackingPerOhmBacked,
             updateTime: new Date(),
         });
+
+        console.log(`Protocol Metrics updated! \n ${Date()}`);
     }
 }

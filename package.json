@@ -1,27 +1,27 @@
 {
-    "name": "community-server-bots",
-    "version": "1.0.0",
-    "description": "",
-    "main": "./prod/index.js",
-    "scripts": {
-      "build": "tsc",
-      "start:dev": "ts-node -r tsconfig-paths/register src/index.ts",
-      "start:prod": "node -r dotenv/config -r ts-node/register/transpile-only -r tsconfig-paths/register ./prod/index.js"
-    },
-    "author": "0xrusowsky",
-    "license": "MIT",
-    "dependencies": {
-      "@discordjs/core": "^0.6.0",
-      "@discordjs/rest": "^1.7.1",
-      "@olympusdao/treasury-subgraph-client": "^1.2.0",
-      "discord-api-types": "^0.37.46",
-      "discord.js": "^14.11.0",
-      "dotenv": "^16.3.1"
-    },
-    "devDependencies": {
-      "@types/node": "^20.3.1",
-      "tsconfig-paths": "^4.2.0",
-      "typescript": "^5.1.3"
-    }
+  "name": "community-server-bots",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./prod/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start:dev": "ts-node -r tsconfig-paths/register src/index.ts",
+    "start:prod": "node -r dotenv/config -r ts-node/register/transpile-only -r tsconfig-paths/register ./prod/index.js"
+  },
+  "author": "0xrusowsky",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/core": "^0.6.0",
+    "@discordjs/rest": "^1.7.1",
+    "@olympusdao/treasury-subgraph-client": "^1.2.0",
+    "discord-api-types": "^0.37.46",
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.3.1",
+    "ts-node": "^10.9.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.1.3"
   }
-  
+}

@@ -43,7 +43,7 @@ ohmPriceBot.on('ready', () => {
     ohmPriceBot.user?.setActivity(`OHM Price`);
 
     ohmPriceBot.guilds.cache.each(guild => guild.members.me && ohmPriceBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.OHM_PRICE) }, 60000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.OHM_PRICE) }, 61000);
 });
 
 ohmPriceBot.on('guildCreate', guild => {
@@ -61,7 +61,7 @@ gohmPriceBot.on('ready', () => {
     gohmPriceBot.user?.setActivity(`gOHM Price`);
 
     gohmPriceBot.guilds.cache.each(guild => guild.members.me && gohmPriceBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.GOHM_PRICE) }, 60000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.GOHM_PRICE) }, 62000);
 });
 
 gohmPriceBot.on('guildCreate', guild => {
@@ -79,7 +79,7 @@ marketCapBot.on('ready', () => {
     marketCapBot.user?.setActivity(`OHM MarketCap`);
 
     marketCapBot.guilds.cache.each(guild => guild.members.me && marketCapBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.MARKETCAP) }, 60000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.MARKETCAP) }, 63000);
 });
 
 marketCapBot.on('guildCreate', guild => {
@@ -97,7 +97,7 @@ liquidBackingBot.on('ready', () => {
     liquidBackingBot.user?.setActivity(`OHM LB 7D SMA `);
 
     liquidBackingBot.guilds.cache.each(guild => guild.members.me && liquidBackingBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.LIQUID_BACKING) }, 60000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.LIQUID_BACKING) }, 64000);
 });
 
 liquidBackingBot.on('guildCreate', guild => {
@@ -110,9 +110,9 @@ liquidBackingBot.login(process.env.DISCORD_LIQUID_BACKING_BOT_TOKEN);
 
 
 
-export async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: ProtocolMetric) {
-    if (!metricsMap.has(metric)) updateProtocolMetrics(metricsMap);
-    if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 60000) updateProtocolMetrics(metricsMap);
+async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: ProtocolMetric) {
+    if (!metricsMap.has(metric)) await updateProtocolMetrics(metricsMap);
+    if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 60000) await updateProtocolMetrics(metricsMap);
 
     switch (metric) {
         case ProtocolMetric.INDEX:
@@ -122,25 +122,25 @@ export async function updateDiscordName(metricsMap: Map<string, MetricData>, met
             ));
 
         case ProtocolMetric.OHM_PRICE:
-            indexBotCache.forEach(guild => guild.setNickname(
+            ohmPriceBotCache.forEach(guild => guild.setNickname(
                 `$${metricsMap.get(ProtocolMetric.OHM_PRICE)!.value
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             ));
 
         case ProtocolMetric.GOHM_PRICE:
-            indexBotCache.forEach(guild => guild.setNickname(
-                `${metricsMap.get(ProtocolMetric.GOHM_PRICE)!.value
+            gohmPriceBotCache.forEach(guild => guild.setNickname(
+                `$${metricsMap.get(ProtocolMetric.GOHM_PRICE)!.value
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             ));
 
         case ProtocolMetric.MARKETCAP:
-            indexBotCache.forEach(guild => guild.setNickname(
+            marketCapBotCache.forEach(guild => guild.setNickname(
                 `$${(metricsMap.get(ProtocolMetric.MARKETCAP)!.value / 1e6)
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}M`
             ));
 
         case ProtocolMetric.LIQUID_BACKING:
-            indexBotCache.forEach(guild => guild.setNickname(
+            liquidBackingBotCache.forEach(guild => guild.setNickname(
                 `$${metricsMap.get(ProtocolMetric.LIQUID_BACKING)!.value
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             ));

@@ -8,7 +8,7 @@ const client = createClient({
 });
 
 // Initialize protocol metrics
-const metrics: Map<string, MetricData> = new Map<string, MetricData>(); //{ [key: string]: MetricData } = {};
+const metrics: Map<string, MetricData> = new Map<string, MetricData>();
 
 // Cache bot servers
 let indexBotCache: GuildMember[] = [];
@@ -108,8 +108,7 @@ liquidBackingBot.on('guildCreate', guild => {
 liquidBackingBot.login(process.env.DISCORD_LIQUID_BACKING_BOT_TOKEN);
 
 
-
-
+// Aux Function to update the discord names of the bots
 async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: ProtocolMetric) {
     if (!metricsMap.has(metric)) await updateProtocolMetrics(metricsMap);
     if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 60000) await updateProtocolMetrics(metricsMap);
@@ -146,5 +145,3 @@ async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: Pr
             ));
     }
 }
-
-getProtocolMetrics();

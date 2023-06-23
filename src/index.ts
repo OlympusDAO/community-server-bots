@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits, GuildMember } from "discord.js";
 import { createClient, Operations, Queries } from "@olympusdao/treasury-subgraph-client";
-import { ProtocolMetric, MetricData } from "metrics";
+import { ProtocolMetric, MetricData, updateProtocolMetrics } from "metrics";
 
 // Wundergraph API Client
 const client = createClient({
@@ -8,7 +8,7 @@ const client = createClient({
 });
 
 // Initialize protocol metrics
-const metrics: { [key: string]: ProtocolMetric } = {};
+const metrics: Map<string, MetricData> = new Map<string, MetricData>(); //{ [key: string]: MetricData } = {};
 
 // Cache bot servers
 let indexBotCache: GuildMember[] = [];
@@ -25,8 +25,7 @@ indexBot.on('ready', () => {
     indexBot.user?.setActivity(`OHM Index`);
 
     indexBot.guilds.cache.each(guild => guild.members.me && indexBotCache.push(guild.members.me));
-    setInterval(fn, frequencyInMilliseconds)
-    updateProtocolMetrics(metrics);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.INDEX) }, 60000);
 });
 
 indexBot.on('guildCreate', guild => {
@@ -44,7 +43,7 @@ ohmPriceBot.on('ready', () => {
     ohmPriceBot.user?.setActivity(`OHM Price`);
 
     ohmPriceBot.guilds.cache.each(guild => guild.members.me && ohmPriceBotCache.push(guild.members.me));
-    updateProtocolMetrics(metrics);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.OHM_PRICE) }, 60000);
 });
 
 ohmPriceBot.on('guildCreate', guild => {
@@ -62,7 +61,7 @@ gohmPriceBot.on('ready', () => {
     gohmPriceBot.user?.setActivity(`gOHM Price`);
 
     gohmPriceBot.guilds.cache.each(guild => guild.members.me && gohmPriceBotCache.push(guild.members.me));
-    updateProtocolMetrics(metrics);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.GOHM_PRICE) }, 60000);
 });
 
 gohmPriceBot.on('guildCreate', guild => {
@@ -80,7 +79,7 @@ marketCapBot.on('ready', () => {
     marketCapBot.user?.setActivity(`OHM MarketCap`);
 
     marketCapBot.guilds.cache.each(guild => guild.members.me && marketCapBotCache.push(guild.members.me));
-    updateProtocolMetrics(metrics);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.MARKETCAP) }, 60000);
 });
 
 marketCapBot.on('guildCreate', guild => {
@@ -98,7 +97,7 @@ liquidBackingBot.on('ready', () => {
     liquidBackingBot.user?.setActivity(`OHM LB 7D SMA `);
 
     liquidBackingBot.guilds.cache.each(guild => guild.members.me && liquidBackingBotCache.push(guild.members.me));
-    updateProtocolMetrics(metrics);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.LIQUID_BACKING) }, 60000);
 });
 
 liquidBackingBot.on('guildCreate', guild => {
@@ -111,34 +110,39 @@ liquidBackingBot.login(process.env.DISCORD_LIQUID_BACKING_BOT_TOKEN);
 
 
 
+export async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: ProtocolMetric) {
+    if (!metricsMap.has(metric)) updateProtocolMetrics(metricsMap);
+    if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 60000) updateProtocolMetrics(metricsMap);
 
+    switch (metric) {
+        case ProtocolMetric.INDEX:
+            indexBotCache.forEach(guild => guild.setNickname(
+                `${metricsMap.get(ProtocolMetric.INDEX)!.value
+                    .toLocaleString('en-us', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`
+            ));
 
-export async function updateDiscordName(metricsMap: { [key: string]: MetricData }, metric: ProtocolMetric) {
-    if (Date.now() - metricsMap[metric].updateTime.getTime() > 120000) { // data freshness of 2 minutes
-        updateProtocolMetrics(metricsMap);
-    else {
+        case ProtocolMetric.OHM_PRICE:
+            indexBotCache.forEach(guild => guild.setNickname(
+                `$${metricsMap.get(ProtocolMetric.OHM_PRICE)!.value
+                    .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            ));
 
-        }
+        case ProtocolMetric.GOHM_PRICE:
+            indexBotCache.forEach(guild => guild.setNickname(
+                `${metricsMap.get(ProtocolMetric.GOHM_PRICE)!.value
+                    .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            ));
+
+        case ProtocolMetric.MARKETCAP:
+            indexBotCache.forEach(guild => guild.setNickname(
+                `$${(metricsMap.get(ProtocolMetric.MARKETCAP)!.value / 1e6)
+                    .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}M`
+            ));
+
+        case ProtocolMetric.LIQUID_BACKING:
+            indexBotCache.forEach(guild => guild.setNickname(
+                `$${metricsMap.get(ProtocolMetric.LIQUID_BACKING)!.value
+                    .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            ));
     }
-
-
-
-    indexBotCache.forEach(guild => guild.setNickname(
-        `${(currentIndex).toLocaleString('en-us', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`
-    ));
-
-    ohmPriceBotCache.forEach(guild => guild.setNickname(
-        `$${(ohmPrice).toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    ));
-
-    gohmPriceBotCache.forEach(guild => guild.setNickname(
-        `$${(gohmPrice).toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    ));
-
-    marketCapBotCache.forEach(guild => guild.setNickname(
-        `$${(ohmMarketCap / 1e6).toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}M`
-    ));
-
-    liquidBackingBotCache.forEach(guild => guild.setNickname(
-        `$${(liquidBackingPerOhmBacked).toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    ));
+}

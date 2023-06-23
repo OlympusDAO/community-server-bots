@@ -2,7 +2,7 @@ import { getMetricsLatestCompleteData, getTokensLatestCompleteData, getSuppliesL
 import { getLiquidBackingPerOhmBacked, getTreasuryAssetValue, getOhmCirculatingSupply } from "subgraph/helpers";
 
 export interface MetricData {
-    value: Number;
+    value: number;
     updateTime: Date;
 }
 
@@ -21,7 +21,7 @@ function getStartDate() {
     return startDate.toISOString().split('T')[0];
 }
 
-async function updateProtocolMetrics(metricsMap: { [key: string]: MetricData }) {
+export async function updateProtocolMetrics(metricsMap: Map<string, MetricData>) {
     const latestTokenData = await getTokensLatestCompleteData(getStartDate());
     const latestSupplyData = await getSuppliesLatestCompleteData(getStartDate());
     const latestMetricData = await getMetricsLatestCompleteData(getStartDate());
@@ -35,29 +35,29 @@ async function updateProtocolMetrics(metricsMap: { [key: string]: MetricData }) 
         const ohmCirculatingSupply = getOhmCirculatingSupply(latestSupplyData, currentIndex)[0]
         const ohmMarketCap = ohmPrice * ohmCirculatingSupply;
 
-        metricsMap['index'] = {
+        metricsMap.set('index', {
             value: currentIndex,
             updateTime: new Date(),
-        }
+        });
 
-        metricsMap['ohmPrice'] = {
+        metricsMap.set('ohmPrice', {
             value: ohmPrice,
             updateTime: new Date(),
-        }
+        });
 
-        metricsMap['gohmPrice'] = {
+        metricsMap.set('gohmPrice', {
             value: gohmPrice,
             updateTime: new Date(),
-        }
+        });
 
-        metricsMap['ohmMarketCap'] = {
+        metricsMap.set('ohmMarketCap', {
             value: ohmMarketCap,
             updateTime: new Date(),
-        }
+        });
 
-        metricsMap['liquidBackingPerOhmBacked'] = {
+        metricsMap.set('liquidBackingPerOhmBacked', {
             value: liquidBackingPerOhmBacked,
             updateTime: new Date(),
-        }
+        });
     }
 }

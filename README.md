@@ -2,8 +2,7 @@
 
 This repo contains the code that powers the sidebar bots in the Olympus community server.
 
-These bots track several protocol metrics that are of interest to the server users, by automatically updating their nickname every 60s.
-
+- The bots track several protocol metrics that are of interest to the community server users, by automatically updating their nickname every 60s.
 - The bots are built with [discord.js v14](https://discord.js.org/).
 - The protocol metrics calculation is done by using the [Treasury Subgraph](https://github.com/OlympusDAO/treasury-subgraph); an in-house monorepo that leverages [wundergraph](https://wundergraph.com/) to abstract away the burden of having to index multiple subgraphs by aggregating its data and removing the need to work with pagination.
 

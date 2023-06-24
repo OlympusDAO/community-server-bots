@@ -1,7 +1,6 @@
 # Olympus Community Server Discord Bots
 
 This repo contains the code that powers the sidebar bots in the Olympus community server.
-
 These bots track several protocol metrics that are of interest to the server users, by automatically updating their nickname every 60s.
 
 - The bots are built with [discord.js v14](https://discord.js.org/).

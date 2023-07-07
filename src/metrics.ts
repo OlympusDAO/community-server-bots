@@ -62,6 +62,16 @@ function historicalAvg(array: MetricData[]) {
     return sum / len;
 }
 
+function updateHistory(history: MetricData[], date: string, value: number) {
+    if (history[0].date == date) {
+        history[0].value = value
+    } else {
+        history.pop();
+        history.unshift({ date: date, value: value });
+    }
+    return history;
+}
+
 export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistory>) {
     // Latest data
     const latestTokenData = await getTokensLatestCompleteData(getStartDate());
@@ -176,52 +186,35 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
             const ohmMarketCapHistory = metricsMap.get(ProtocolMetric.MARKETCAP)?.history!;
             const liquidBackingPerOhmBackedHistory = metricsMap.get(ProtocolMetric.LIQUID_BACKING)?.history!;
 
-            indexHistory.pop();
-            indexHistory.unshift({ date: date, value: currentIndex });
             metricsMap.set('index', {
                 value: currentIndex,
                 updateTime: new Date(),
-                history: indexHistory,
+                history: updateHistory(indexHistory, date, currentIndex),
             });
 
-            ohmPriceHistory.pop();
-            ohmPriceHistory.unshift({ date: date, value: ohmPrice });
             metricsMap.set('ohmPrice', {
                 value: ohmPrice,
                 updateTime: new Date(),
-                history: ohmPriceHistory
+                history: updateHistory(ohmPriceHistory, date, ohmPrice),
             });
 
-            gohmPriceHistory.pop();
-            gohmPriceHistory.unshift({ date: date, value: gohmPrice });
             metricsMap.set('gohmPrice', {
                 value: gohmPrice,
                 updateTime: new Date(),
-                history: gohmPriceHistory
+                history: updateHistory(gohmPriceHistory, date, gohmPrice),
             });
 
-            ohmMarketCapHistory.pop();
-            ohmMarketCapHistory.unshift({ date: date, value: ohmMarketCap });
             metricsMap.set('ohmMarketCap', {
                 value: ohmMarketCap,
                 updateTime: new Date(),
-                history: ohmMarketCapHistory
+                history: updateHistory(ohmMarketCapHistory, date, ohmMarketCap),
             });
 
-            ohmMarketCapHistory.pop();
-            ohmMarketCapHistory.unshift({ date: date, value: ohmMarketCap });
-            metricsMap.set('ohmMarketCap', {
-                value: ohmMarketCap,
-                updateTime: new Date(),
-                history: ohmMarketCapHistory
-            });
-
-            liquidBackingPerOhmBackedHistory.pop();
-            liquidBackingPerOhmBackedHistory.unshift({ date: date, value: currentIndex });
+            const updatedHistory = updateHistory(liquidBackingPerOhmBackedHistory, date, historicLiquidBackingPerOhmBacked);
             metricsMap.set('liquidBackingPerOhmBacked', {
-                value: historicalAvg(liquidBackingPerOhmBackedHistory),
+                value: historicalAvg(updatedHistory),
                 updateTime: new Date(),
-                history: liquidBackingPerOhmBackedHistory
+                history: updatedHistory
             });
 
             console.log(`Protocol Metrics updated! \n ${Date()}`);

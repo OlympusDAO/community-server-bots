@@ -175,7 +175,7 @@ async function updateDiscordName(metricsMap: Map<string, MetricHistory>, metric:
 async function createLiqBackingEmbed(metricsMap: Map<string, MetricHistory>) {
     const liquidBackingPerOhmBacked = metricsMap.get(ProtocolMetric.LIQUID_BACKING);
     if (liquidBackingPerOhmBacked === undefined || liquidBackingPerOhmBacked.history === undefined) {
-        await updateProtocolMetrics(metricsMap);
+        await updateDiscordName(metricsMap, ProtocolMetric.LIQUID_BACKING);
     }
     const title = `Liquid Backing 7 day MA: $${liquidBackingPerOhmBacked?.value.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const fields: APIEmbedField[] = [];

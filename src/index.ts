@@ -1,9 +1,9 @@
-import { REST, Routes, Client, GatewayIntentBits, GuildMember } from "discord.js";
+import { REST, Routes, Client, GatewayIntentBits, GuildMember, EmbedBuilder, APIEmbedField } from "discord.js";
 import { createClient } from "@olympusdao/treasury-subgraph-client";
-import { ProtocolMetric, MetricData, updateProtocolMetrics } from "metrics";
+import { ProtocolMetric, MetricData, MetricHistory, updateProtocolMetrics } from "metrics";
 
 // Initialize protocol metrics
-const metrics: Map<string, MetricData> = new Map<string, MetricData>();
+const metrics: Map<string, MetricHistory> = new Map<string, MetricHistory>();
 
 // Cache bot servers
 let indexBotCache: GuildMember[] = [];
@@ -105,7 +105,7 @@ liquidBackingBot.on('guildCreate', guild => {
 liquidBackingBot.on('interactionCreate', async interaction => {
     if (!interaction.isChatInputCommand()) return;
     if (interaction.commandName === 'get-running-lb') {
-        await interaction.reply('Pong!');
+        await interaction.reply({ embeds: [await createLiqBackingEmbed(metrics)] });
     }
 });
 
@@ -134,9 +134,9 @@ async function registerSlashCommands() {
 }
 
 // Update the discord names of the bots
-async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: ProtocolMetric) {
+async function updateDiscordName(metricsMap: Map<string, MetricHistory>, metric: ProtocolMetric) {
     if (!metricsMap.has(metric)) await updateProtocolMetrics(metricsMap);
-    if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 60000) await updateProtocolMetrics(metricsMap);
+    if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 300_000) await updateProtocolMetrics(metricsMap);
 
     switch (metric) {
         case ProtocolMetric.INDEX:
@@ -169,4 +169,28 @@ async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: Pr
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             ));
     }
+}
+
+// Build the embed with the Liquid Backing MA data points
+async function createLiqBackingEmbed(metricsMap: Map<string, MetricHistory>) {
+    const liquidBackingPerOhmBacked = metricsMap.get(ProtocolMetric.LIQUID_BACKING);
+    if (liquidBackingPerOhmBacked === undefined || liquidBackingPerOhmBacked.history === undefined) {
+        await updateProtocolMetrics(metricsMap);
+    }
+    const title = `Liquid Backing 7 day MA: $${liquidBackingPerOhmBacked?.value.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const fields: APIEmbedField[] = [];
+    liquidBackingPerOhmBacked?.history.forEach((day) => {
+        fields.push({
+            name: day.date,
+            value: `$${day.value.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        })
+    })
+    const embed = new EmbedBuilder()
+        .setColor(0x0099FF)
+        .setTitle(title)
+        .setURL('https://app.olympusdao.finance/#/dashboard?days=7')
+        .setDescription('Detailed view of the liquid backing MA. Data points of the last 7 days.')
+        .addFields(fields);
+
+    return embed;
 }

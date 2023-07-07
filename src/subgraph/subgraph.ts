@@ -45,7 +45,7 @@ export async function queryMetrics(startDate: string | null | undefined) {
     return response;
 }
 
-async function getTokensCompleteData(startDate: string | null | undefined) {
+export async function getTokensCompleteData(startDate: string | null | undefined) {
     const { data: queryResults } = await queryTokens(startDate);
 
     if (!queryResults || queryResults.length === 0) return undefined;
@@ -67,7 +67,7 @@ async function getTokensCompleteData(startDate: string | null | undefined) {
     return completeResults;
 }
 
-async function getSuppliesCompleteData(startDate: string | null | undefined) {
+export async function getSuppliesCompleteData(startDate: string | null | undefined) {
     const { data: queryResults } = await querySupplies(startDate);
 
     if (!queryResults || queryResults.length === 0) return undefined;
@@ -89,7 +89,7 @@ async function getSuppliesCompleteData(startDate: string | null | undefined) {
     return completeResults;
 }
 
-async function getMetricsCompleteData(startDate: string | null | undefined) {
+export async function getMetricsCompleteData(startDate: string | null | undefined) {
     const { data: queryResults } = await queryMetrics(startDate);
 
     if (!queryResults || queryResults.length === 0) return undefined;

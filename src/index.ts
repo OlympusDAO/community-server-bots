@@ -1,12 +1,9 @@
-import { Client, GatewayIntentBits, GuildMember } from "discord.js";
+import { REST, Routes, Client, GatewayIntentBits, GuildMember, EmbedBuilder, APIEmbedField } from "discord.js";
 import { createClient } from "@olympusdao/treasury-subgraph-client";
-import { ProtocolMetric, MetricData, updateProtocolMetrics } from "metrics";
-
-// Wundergraph API Client
-const client = createClient();
+import { ProtocolMetric, MetricData, MetricHistory, updateProtocolMetrics } from "metrics";
 
 // Initialize protocol metrics
-const metrics: Map<string, MetricData> = new Map<string, MetricData>();
+const metrics: Map<string, MetricHistory> = new Map<string, MetricHistory>();
 
 // Cache bot servers
 let indexBotCache: GuildMember[] = [];
@@ -14,6 +11,8 @@ let ohmPriceBotCache: GuildMember[] = [];
 let gohmPriceBotCache: GuildMember[] = [];
 let marketCapBotCache: GuildMember[] = [];
 let liquidBackingBotCache: GuildMember[] = [];
+
+registerSlashCommands();
 
 // Index Bot
 const indexBot = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -23,7 +22,7 @@ indexBot.on('ready', () => {
     indexBot.user?.setActivity(`OHM Index`);
 
     indexBot.guilds.cache.each(guild => guild.members.me && indexBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.INDEX) }, 60000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.INDEX) }, 300_000);
 });
 
 indexBot.on('guildCreate', guild => {
@@ -41,7 +40,7 @@ ohmPriceBot.on('ready', () => {
     ohmPriceBot.user?.setActivity(`OHM Price`);
 
     ohmPriceBot.guilds.cache.each(guild => guild.members.me && ohmPriceBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.OHM_PRICE) }, 61000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.OHM_PRICE) }, 310_000);
 });
 
 ohmPriceBot.on('guildCreate', guild => {
@@ -59,7 +58,7 @@ gohmPriceBot.on('ready', () => {
     gohmPriceBot.user?.setActivity(`gOHM Price`);
 
     gohmPriceBot.guilds.cache.each(guild => guild.members.me && gohmPriceBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.GOHM_PRICE) }, 62000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.GOHM_PRICE) }, 320_000);
 });
 
 gohmPriceBot.on('guildCreate', guild => {
@@ -77,7 +76,7 @@ marketCapBot.on('ready', () => {
     marketCapBot.user?.setActivity(`OHM MarketCap`);
 
     marketCapBot.guilds.cache.each(guild => guild.members.me && marketCapBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.MARKETCAP) }, 63000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.MARKETCAP) }, 330_000);
 });
 
 marketCapBot.on('guildCreate', guild => {
@@ -95,7 +94,7 @@ liquidBackingBot.on('ready', () => {
     liquidBackingBot.user?.setActivity(`OHM LB 7D SMA `);
 
     liquidBackingBot.guilds.cache.each(guild => guild.members.me && liquidBackingBotCache.push(guild.members.me));
-    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.LIQUID_BACKING) }, 64000);
+    setInterval(() => { updateDiscordName(metrics, ProtocolMetric.LIQUID_BACKING) }, 340_000);
 });
 
 liquidBackingBot.on('guildCreate', guild => {
@@ -103,13 +102,41 @@ liquidBackingBot.on('guildCreate', guild => {
     console.log(`New server has added the liquidBackingBot! Name: ${guild.name}`);
 });
 
+liquidBackingBot.on('interactionCreate', async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+    if (interaction.commandName === 'get-running-lb') {
+        await interaction.reply({ embeds: [await createLiqBackingEmbed(metrics)] });
+    }
+});
+
 liquidBackingBot.login(process.env.DISCORD_LIQUID_BACKING_BOT_TOKEN);
 
 
-// Aux Function to update the discord names of the bots
-async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: ProtocolMetric) {
+// -- AUX FUNCTIONS ----------------------------------------------------------------------------------------------------
+
+// Register slash commands
+async function registerSlashCommands() {
+    const commands = [
+        {
+            name: 'get-running-lb',
+            description: 'Returns the liquid backing in each of the last 7 days.',
+        },
+    ];
+
+    const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_LIQUID_BACKING_BOT_TOKEN!);
+
+    try {
+        await rest.put(Routes.applicationCommands(process.env.DISCORD_LIQUID_BACKING_BOT_CLIENT!), { body: commands });
+        console.log('Successfully reloaded application (/) commands.');
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+// Update the discord names of the bots
+async function updateDiscordName(metricsMap: Map<string, MetricHistory>, metric: ProtocolMetric) {
     if (!metricsMap.has(metric)) await updateProtocolMetrics(metricsMap);
-    if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 60000) await updateProtocolMetrics(metricsMap);
+    if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 300_000) await updateProtocolMetrics(metricsMap);
 
     switch (metric) {
         case ProtocolMetric.INDEX:
@@ -142,4 +169,28 @@ async function updateDiscordName(metricsMap: Map<string, MetricData>, metric: Pr
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             ));
     }
+}
+
+// Build the embed with the Liquid Backing MA data points
+async function createLiqBackingEmbed(metricsMap: Map<string, MetricHistory>) {
+    const liquidBackingPerOhmBacked = metricsMap.get(ProtocolMetric.LIQUID_BACKING);
+    if (liquidBackingPerOhmBacked === undefined || liquidBackingPerOhmBacked.history === undefined) {
+        await updateDiscordName(metricsMap, ProtocolMetric.LIQUID_BACKING);
+    }
+    const title = `Liquid Backing 7 day MA: $${liquidBackingPerOhmBacked?.value.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const fields: APIEmbedField[] = [];
+    liquidBackingPerOhmBacked?.history.forEach((day) => {
+        fields.push({
+            name: day.date,
+            value: `$${day.value.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        })
+    })
+    const embed = new EmbedBuilder()
+        .setColor(0x0099FF)
+        .setTitle(title)
+        .setURL('https://app.olympusdao.finance/#/dashboard?days=7')
+        .setDescription('Detailed view of the liquid backing MA. Data points of the last 7 days.')
+        .addFields(fields);
+
+    return embed;
 }

@@ -36,7 +36,7 @@ async function querySupplies(startDate: string | null | undefined) {
     return response;
 }
 
-export async function queryMetrics(startDate: string | null | undefined) {
+export async function queryProtocolMetrics(startDate: string | null | undefined) {
     const response = await client.query({
         operationName: "paginated/protocolMetrics",
         input: { startDate: startDate || "" },
@@ -89,8 +89,8 @@ export async function getSuppliesCompleteData(startDate: string | null | undefin
     return completeResults;
 }
 
-export async function getMetricsCompleteData(startDate: string | null | undefined) {
-    const { data: queryResults } = await queryMetrics(startDate);
+export async function getProtocolMetricsCompleteData(startDate: string | null | undefined) {
+    const { data: queryResults } = await queryProtocolMetrics(startDate);
 
     if (!queryResults || queryResults.length === 0) return undefined;
     // Sort by date descending (just in case)
@@ -130,8 +130,8 @@ export async function getSuppliesLatestCompleteData(startDate: string | null | u
 };
 
 
-export async function getMetricsLatestCompleteData(startDate: string | null | undefined) {
-    const completeResults = await getMetricsCompleteData(startDate);
+export async function getProtocolMetricsLatestCompleteData(startDate: string | null | undefined) {
+    const completeResults = await getProtocolMetricsCompleteData(startDate);
 
     if (!completeResults || completeResults.length === 0) return undefined;
 

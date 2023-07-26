@@ -1,9 +1,9 @@
 import {
     getTokensLatestCompleteData,
-    getMetricsLatestCompleteData,
+    getProtocolMetricsLatestCompleteData,
     getSuppliesLatestCompleteData,
     getTokensCompleteData,
-    getMetricsCompleteData,
+    getProtocolMetricsCompleteData,
     getSuppliesCompleteData
 } from "subgraph/subgraph";
 import {
@@ -75,11 +75,11 @@ function updateHistory(history: MetricData[], date: string, value: number) {
 export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistory>) {
     // Latest data
     const latestTokenData = await getTokensLatestCompleteData(getStartDate());
-    const latestMetricData = await getMetricsLatestCompleteData(getStartDate());
+    const latestMetricData = await getProtocolMetricsLatestCompleteData(getStartDate());
     const latestSupplyData = await getSuppliesLatestCompleteData(getStartDate());
     // 7 Day data
     const historicTokenData = await getTokensCompleteData(getStartDate());
-    const historicMetricData = await getMetricsCompleteData(getStartDate());
+    const historicMetricData = await getProtocolMetricsCompleteData(getStartDate());
     const historicSupplyData = await getSuppliesCompleteData(getStartDate());
 
     const historyLength = [

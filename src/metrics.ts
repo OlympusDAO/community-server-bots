@@ -1,16 +1,7 @@
 import {
-    getTokensLatestCompleteData,
-    getProtocolMetricsLatestCompleteData,
-    getSuppliesLatestCompleteData,
-    getTokensCompleteData,
-    getProtocolMetricsCompleteData,
-    getSuppliesCompleteData
+    getMetricsCompleteData,
+    Metric
 } from "subgraph/subgraph";
-import {
-    getTreasuryAssetValue,
-    getOhmCirculatingSupply,
-    getLiquidBackingPerOhmBacked
-} from "subgraph/helpers";
 
 export interface MetricData {
     date: string;
@@ -72,15 +63,18 @@ function updateHistory(history: MetricData[], date: string, value: number) {
     return history;
 }
 
+function filterLatestMetricData(metricData: Metric[] | undefined): Metric[] {
+    if (!metricData || metricData.length === 0) return [];
+
+    const latestDate: string = metricData[0].date;
+    const latestData = metricData.filter(record => record.date === latestDate);
+
+    return latestData;
+}
+
 export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistory>) {
-    // Latest data
-    const latestTokenData = await getTokensLatestCompleteData(getStartDate());
-    const latestProtocolMetricData = await getProtocolMetricsLatestCompleteData(getStartDate());
-    const latestSupplyData = await getSuppliesLatestCompleteData(getStartDate());
-    // 7 Day data
-    const historicTokenData = await getTokensCompleteData(getStartDate());
-    const historicProtocolMetricData = await getProtocolMetricsCompleteData(getStartDate());
-    const historicSupplyData = await getSuppliesCompleteData(getStartDate());
+    const historicMetricData = await getMetricsCompleteData(getStartDate());
+    const latestMetricData = filterLatestMetricData(historicMetricData);
 
     const historyLength = [
         metricsMap.get(ProtocolMetric.INDEX)?.history.length,
@@ -92,7 +86,7 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
 
     if (historyLength.some((length) => length === undefined || length < 7)) {
 
-        if (historicTokenData !== undefined && historicSupplyData !== undefined && historicProtocolMetricData !== undefined) {
+        if (historicMetricData !== undefined) {
 
             const last7dates = getlast7Dates();
             const indexHistory: MetricData[] = []
@@ -103,17 +97,17 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
 
             // Loop over the 3 arrays simultaneously
             last7dates.forEach((date) => {
-                const tokenData = historicTokenData.filter(record => record.date === date);
-                const metricData = historicProtocolMetricData.filter(record => record.date === date);
-                const supplyData = historicSupplyData.filter(record => record.date === date);
+                const metricData = historicMetricData.filter(record => record.date === date);
 
                 // Check if the corresponding date exists in the other arrays
-                if (metricData && supplyData) {
-                    const index = Number(metricData[0].currentIndex);
-                    const ohmPrice = Number(metricData[0].ohmPrice);
-                    const ohmCirculatingSupply = getOhmCirculatingSupply(supplyData, index)[0];
-                    const liquidBacking = getTreasuryAssetValue(tokenData, true);
-                    const liquidBackingPerOhmBacked = getLiquidBackingPerOhmBacked(liquidBacking, supplyData, index);
+                if (metricData) {
+                    const metricRecord = metricData[0];
+
+                    const index = metricRecord.ohmIndex;
+                    const ohmPrice = metricRecord.ohmPrice;
+                    const gOhmPrice = metricRecord.gOhmPrice;
+                    const liquidBackingPerOhmBacked = metricRecord.treasuryLiquidBackingPerOhmBacked;
+                    const marketCap = metricRecord.marketCap;
 
                     indexHistory.push({
                         date: date,
@@ -125,11 +119,11 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
                     });
                     gohmPriceHistory.push({
                         date: date,
-                        value: Number(metricData[0].gOhmPrice),
+                        value: gOhmPrice,
                     });
                     ohmMarketCapHistory.push({
                         date: date,
-                        value: ohmPrice * ohmCirculatingSupply,
+                        value: marketCap,
                     });
                     liquidBackingPerOhmBackedHistory.push({
                         date: date,
@@ -168,17 +162,15 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
         }
     } else {
 
-        if (latestTokenData !== undefined && latestSupplyData !== undefined && latestProtocolMetricData !== undefined) {
-            const date = latestProtocolMetricData[0].date;
-            const currentIndex = Number(latestProtocolMetricData[0].currentIndex);
-            const gohmPrice = Number(latestProtocolMetricData[0].gOhmPrice);
-            const ohmPrice = Number(latestProtocolMetricData[0].ohmPrice);
-            const ohmCirculatingSupply = getOhmCirculatingSupply(latestSupplyData, currentIndex)[0]
-            const ohmMarketCap = ohmPrice * ohmCirculatingSupply;
-            const liquidBacking = getTreasuryAssetValue(latestTokenData, true);
+        if (latestMetricData !== undefined) {
+            const latestMetricRecord = latestMetricData[0];
 
-            const historicLiquidBacking = getTreasuryAssetValue(latestTokenData, true);
-            const historicLiquidBackingPerOhmBacked = getLiquidBackingPerOhmBacked(liquidBacking, latestSupplyData, currentIndex)
+            const date = latestMetricRecord.date;
+            const currentIndex = latestMetricRecord.ohmIndex;
+            const gohmPrice = latestMetricRecord.gOhmPrice;
+            const ohmPrice = latestMetricRecord.ohmPrice;
+            const ohmMarketCap = latestMetricRecord.marketCap;
+            const historicLiquidBackingPerOhmBacked = latestMetricRecord.treasuryLiquidBackingPerOhmBacked;
 
             const indexHistory = metricsMap.get(ProtocolMetric.INDEX)?.history!;
             const ohmPriceHistory = metricsMap.get(ProtocolMetric.OHM_PRICE)?.history!;

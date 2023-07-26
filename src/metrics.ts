@@ -75,11 +75,11 @@ function updateHistory(history: MetricData[], date: string, value: number) {
 export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistory>) {
     // Latest data
     const latestTokenData = await getTokensLatestCompleteData(getStartDate());
-    const latestMetricData = await getProtocolMetricsLatestCompleteData(getStartDate());
+    const latestProtocolMetricData = await getProtocolMetricsLatestCompleteData(getStartDate());
     const latestSupplyData = await getSuppliesLatestCompleteData(getStartDate());
     // 7 Day data
     const historicTokenData = await getTokensCompleteData(getStartDate());
-    const historicMetricData = await getProtocolMetricsCompleteData(getStartDate());
+    const historicProtocolMetricData = await getProtocolMetricsCompleteData(getStartDate());
     const historicSupplyData = await getSuppliesCompleteData(getStartDate());
 
     const historyLength = [
@@ -92,7 +92,7 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
 
     if (historyLength.some((length) => length === undefined || length < 7)) {
 
-        if (historicTokenData !== undefined && historicSupplyData !== undefined && historicMetricData !== undefined) {
+        if (historicTokenData !== undefined && historicSupplyData !== undefined && historicProtocolMetricData !== undefined) {
 
             const last7dates = getlast7Dates();
             const indexHistory: MetricData[] = []
@@ -104,7 +104,7 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
             // Loop over the 3 arrays simultaneously
             last7dates.forEach((date) => {
                 const tokenData = historicTokenData.filter(record => record.date === date);
-                const metricData = historicMetricData.filter(record => record.date === date);
+                const metricData = historicProtocolMetricData.filter(record => record.date === date);
                 const supplyData = historicSupplyData.filter(record => record.date === date);
 
                 // Check if the corresponding date exists in the other arrays
@@ -168,11 +168,11 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
         }
     } else {
 
-        if (latestTokenData !== undefined && latestSupplyData !== undefined && latestMetricData !== undefined) {
-            const date = latestMetricData[0].date;
-            const currentIndex = Number(latestMetricData[0].currentIndex);
-            const gohmPrice = Number(latestMetricData[0].gOhmPrice);
-            const ohmPrice = Number(latestMetricData[0].ohmPrice);
+        if (latestTokenData !== undefined && latestSupplyData !== undefined && latestProtocolMetricData !== undefined) {
+            const date = latestProtocolMetricData[0].date;
+            const currentIndex = Number(latestProtocolMetricData[0].currentIndex);
+            const gohmPrice = Number(latestProtocolMetricData[0].gOhmPrice);
+            const ohmPrice = Number(latestProtocolMetricData[0].ohmPrice);
             const ohmCirculatingSupply = getOhmCirculatingSupply(latestSupplyData, currentIndex)[0]
             const ohmMarketCap = ohmPrice * ohmCirculatingSupply;
             const liquidBacking = getTreasuryAssetValue(latestTokenData, true);

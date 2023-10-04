@@ -1,6 +1,5 @@
 import { REST, Routes, Client, GatewayIntentBits, GuildMember, EmbedBuilder, APIEmbedField } from "discord.js";
-import { createClient } from "@olympusdao/treasury-subgraph-client";
-import { ProtocolMetric, MetricData, MetricHistory, updateProtocolMetrics } from "metrics";
+import { ProtocolMetric, MetricHistory, updateProtocolMetrics } from "metrics";
 
 // Initialize protocol metrics
 const metrics: Map<string, MetricHistory> = new Map<string, MetricHistory>();

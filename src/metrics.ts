@@ -84,11 +84,7 @@ function filterLatestMetricData(metricData: Metric[] | undefined): Metric[] {
 
 export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistory>) {
     const historicMetricData = await getMetricsCompleteData(getStartDate());
-    console.log("historicMetricData");
-    console.log(historicMetricData);
     const latestMetricData = filterLatestMetricData(historicMetricData);
-    console.log("latestMetricData");
-    console.log(latestMetricData);
 
     const historyLength = [
         metricsMap.get(ProtocolMetric.INDEX)?.history.length,

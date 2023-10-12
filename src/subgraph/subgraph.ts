@@ -15,7 +15,9 @@ async function queryMetrics(startDate: string | null | undefined, crossChainData
 }
 
 export async function getMetricsCompleteData(startDate: string | null | undefined) {
+    console.log("startDate", startDate)
     const { data: queryResults } = await queryMetrics(startDate, true);
+    console.log("queryResults", queryResults)
 
     if (!queryResults || queryResults.length === 0) return undefined;
 

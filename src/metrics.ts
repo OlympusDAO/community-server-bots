@@ -54,11 +54,21 @@ function historicalAvg(array: MetricData[]) {
 }
 
 function updateHistory(history: MetricData[], date: string, value: number) {
-    if (history[0].date == date) {
+    // If the input date is the latest stored date, update current value if the new one is not 0.
+    if (history[0].date == date && value != 0) {
         history[0].value = value
-    } else {
+    }
+    // If the input date is new, add it to the history and remove the oldest one.
+    else {
         history.pop();
         history.unshift({ date: date, value: value });
+    }
+
+    // Ensure that there aren't any 0 values in the history.
+    for (let i = 0; i < history.length - 1; i++) {
+        if (history[i].value == 0) {
+            history[i].value = history[i + 1].value;
+        }
     }
     return history;
 }
@@ -74,7 +84,11 @@ function filterLatestMetricData(metricData: Metric[] | undefined): Metric[] {
 
 export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistory>) {
     const historicMetricData = await getMetricsCompleteData(getStartDate());
+    console.log("historicMetricData");
+    console.log(historicMetricData);
     const latestMetricData = filterLatestMetricData(historicMetricData);
+    console.log("latestMetricData");
+    console.log(latestMetricData);
 
     const historyLength = [
         metricsMap.get(ProtocolMetric.INDEX)?.history.length,

@@ -135,6 +135,7 @@ async function registerSlashCommands() {
 // Update the discord names of the bots
 async function updateDiscordName(metricsMap: Map<string, MetricHistory>, metric: ProtocolMetric) {
     if (!metricsMap.has(metric)) await updateProtocolMetrics(metricsMap);
+    console.log(metricsMap.get(metric))
     if (Date.now() - metricsMap.get(metric)!.updateTime.getTime() >= 300_000) await updateProtocolMetrics(metricsMap);
 
     switch (metric) {

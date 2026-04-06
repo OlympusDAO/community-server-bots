@@ -7,7 +7,7 @@
     "build": "tsc",
     "start:dev": "ts-node -r tsconfig-paths/register src/index.ts",
     "start:prod": "node -r dotenv/config -r ts-node/register/transpile-only -r tsconfig-paths/register ./prod/index.js",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow@1.2.2 pnpm"
   },
   "author": "0xrusowsky",
   "license": "MIT",

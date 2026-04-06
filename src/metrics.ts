@@ -24,7 +24,7 @@ export enum ProtocolMetric {
 
 // Aux Functions
 function getStartDate() {
-    let startDate = new Date();
+    const startDate = new Date();
     startDate.setDate(startDate.getDate() - 6);
     return startDate.toISOString().split('T')[0];
 }
@@ -33,7 +33,7 @@ function getlast7Dates() {
     const last7: string[] = [];
     const today = new Date();
     for (let i = 0; i < 7; i++) {
-        let startDate = new Date();
+        const startDate = new Date();
         startDate.setDate(today.getDate() - i);
         last7.push(startDate.toISOString().split('T')[0]);
     }
@@ -172,11 +172,27 @@ export async function updateProtocolMetrics(metricsMap: Map<string, MetricHistor
             const ohmMarketCap = latestMetricRecord.marketCap;
             const historicLiquidBackingPerOhmBacked = latestMetricRecord.treasuryLiquidBackingPerOhmBacked;
 
-            const indexHistory = metricsMap.get(ProtocolMetric.INDEX)?.history!;
-            const ohmPriceHistory = metricsMap.get(ProtocolMetric.OHM_PRICE)?.history!;
-            const gohmPriceHistory = metricsMap.get(ProtocolMetric.GOHM_PRICE)?.history!;
-            const ohmMarketCapHistory = metricsMap.get(ProtocolMetric.MARKETCAP)?.history!;
-            const liquidBackingPerOhmBackedHistory = metricsMap.get(ProtocolMetric.LIQUID_BACKING)?.history!;
+            const indexMetric = metricsMap.get(ProtocolMetric.INDEX);
+            const ohmPriceMetric = metricsMap.get(ProtocolMetric.OHM_PRICE);
+            const gohmPriceMetric = metricsMap.get(ProtocolMetric.GOHM_PRICE);
+            const ohmMarketCapMetric = metricsMap.get(ProtocolMetric.MARKETCAP);
+            const liquidBackingMetric = metricsMap.get(ProtocolMetric.LIQUID_BACKING);
+
+            if (
+                !indexMetric ||
+                !ohmPriceMetric ||
+                !gohmPriceMetric ||
+                !ohmMarketCapMetric ||
+                !liquidBackingMetric
+            ) {
+                return;
+            }
+
+            const indexHistory = indexMetric.history;
+            const ohmPriceHistory = ohmPriceMetric.history;
+            const gohmPriceHistory = gohmPriceMetric.history;
+            const ohmMarketCapHistory = ohmMarketCapMetric.history;
+            const liquidBackingPerOhmBackedHistory = liquidBackingMetric.history;
 
             metricsMap.set('index', {
                 value: currentIndex,

@@ -5,11 +5,11 @@ import { ProtocolMetric, MetricHistory, updateProtocolMetrics } from "metrics";
 const metrics: Map<string, MetricHistory> = new Map<string, MetricHistory>();
 
 // Cache bot servers
-let indexBotCache: GuildMember[] = [];
-let ohmPriceBotCache: GuildMember[] = [];
-let gohmPriceBotCache: GuildMember[] = [];
-let marketCapBotCache: GuildMember[] = [];
-let liquidBackingBotCache: GuildMember[] = [];
+const indexBotCache: GuildMember[] = [];
+const ohmPriceBotCache: GuildMember[] = [];
+const gohmPriceBotCache: GuildMember[] = [];
+const marketCapBotCache: GuildMember[] = [];
+const liquidBackingBotCache: GuildMember[] = [];
 
 registerSlashCommands();
 
@@ -143,30 +143,35 @@ async function updateDiscordName(metricsMap: Map<string, MetricHistory>, metric:
                 `${metricsMap.get(ProtocolMetric.INDEX)!.value
                     .toLocaleString('en-us', { minimumFractionDigits: 4, maximumFractionDigits: 4 })}`
             ));
+            break;
 
         case ProtocolMetric.OHM_PRICE:
             ohmPriceBotCache.forEach(guild => guild.setNickname(
                 `$${metricsMap.get(ProtocolMetric.OHM_PRICE)!.value
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             ));
+            break;
 
         case ProtocolMetric.GOHM_PRICE:
             gohmPriceBotCache.forEach(guild => guild.setNickname(
                 `$${metricsMap.get(ProtocolMetric.GOHM_PRICE)!.value
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             ));
+            break;
 
         case ProtocolMetric.MARKETCAP:
             marketCapBotCache.forEach(guild => guild.setNickname(
                 `$${(metricsMap.get(ProtocolMetric.MARKETCAP)!.value / 1e6)
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}M`
             ));
+            break;
 
         case ProtocolMetric.LIQUID_BACKING:
             liquidBackingBotCache.forEach(guild => guild.setNickname(
                 `$${metricsMap.get(ProtocolMetric.LIQUID_BACKING)!.value
                     .toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
             ));
+            break;
     }
 }
 
@@ -176,9 +181,13 @@ async function createLiqBackingEmbed(metricsMap: Map<string, MetricHistory>) {
     if (liquidBackingPerOhmBacked === undefined || liquidBackingPerOhmBacked.history === undefined) {
         await updateDiscordName(metricsMap, ProtocolMetric.LIQUID_BACKING);
     }
-    const title = `Liquid Backing 7 day MA: $${liquidBackingPerOhmBacked?.value.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const refreshedLiquidBackingPerOhmBacked = metricsMap.get(ProtocolMetric.LIQUID_BACKING);
+    if (!refreshedLiquidBackingPerOhmBacked || !refreshedLiquidBackingPerOhmBacked.history) {
+        throw new Error('Liquid backing metrics are unavailable');
+    }
+    const title = `Liquid Backing 7 day MA: $${refreshedLiquidBackingPerOhmBacked.value.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     const fields: APIEmbedField[] = [];
-    liquidBackingPerOhmBacked?.history.forEach((day) => {
+    refreshedLiquidBackingPerOhmBacked.history.forEach((day) => {
         fields.push({
             name: day.date,
             value: `$${day.value.toLocaleString('en-us', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

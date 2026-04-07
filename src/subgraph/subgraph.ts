@@ -2,7 +2,7 @@ import { createClient, Queries } from "@olympusdao/treasury-subgraph-client";
 
 const client = createClient();
 
-type MetricArray = Exclude<Queries["paginated/metrics"]["response"]["data"], undefined>;
+type MetricArray = Exclude<Queries["paginated/metrics"]["data"], undefined>;
 export type Metric = MetricArray[0];
 
 async function queryMetrics(startDate: string | null | undefined, crossChainDataComplete?: boolean) {
